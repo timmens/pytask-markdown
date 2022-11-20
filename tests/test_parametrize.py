@@ -14,7 +14,7 @@ def test_parametrized_rendering_of_markdown_documents_w_parametrize(tmp_path):
     task_source = """
     import pytask
 
-    @pytask.mark.parametrize("marp", [
+    @pytask.mark.parametrize("markdown", [
         {"script": "document_1.md", "document": "document_1.pdf"},
         {"script": "document_2.md", "document": "document_2.pdf"},
     ])
@@ -45,15 +45,15 @@ def test_parametrized_rendering_of_markdown_documents_w_parametrize(tmp_path):
 
 @needs_marp
 @pytest.mark.end_to_end
-def test_parametrized_compilation_of_marp_documents_w_loop(tmp_path):
+def test_parametrized_compilation_of_markdown_documents_w_loop(tmp_path):
     source = """
     import pytask
 
     for i in range(1, 3):
 
         @pytask.mark.task
-        @pytask.mark.marp(script=f"document_{i}.md", document=f"document_{i}.pdf")
-        def task_compile_marp_document():
+        @pytask.mark.markdown(script=f"document_{i}.md", document=f"document_{i}.pdf")
+        def task_compile_markdown_document():
             pass
     """
     tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(source))
@@ -86,21 +86,17 @@ def test_parametrizing_marp_options_w_parametrize(tmp_path):
     from pytask_markdown import compilation_steps as cs
 
     @pytask.mark.parametrize(
-        "marp",
+        "markdown",
         [
             {
                 "script": "document.md",
                 "document": "document.pdf",
-                "compilation_steps": cs.marp_cli(
-                    ("--html")
-                ),
+                "compilation_steps": cs.marp("--html")
             },
             {
                 "script": "document.md",
                 "document": "document.html",
-                "compilation_steps": cs.marp_cli(
-                    ("--html")
-                ),
+                "compilation_steps": cs.marp("--html")
             }
         ]
     )
@@ -142,10 +138,10 @@ def test_parametrizing_marp_options_w_loop(tmp_path):
         for format in ("pdf", "html"):
 
             @pytask.mark.task
-            @pytask.mark.marp(
+            @pytask.mark.markdown(
                 script="document.md",
                 document=f"document_{theme}.{format}",
-                compilation_steps=cs.marp_cli(f"--theme-set {theme}.scss")
+                compilation_steps=cs.marp(f"--theme-set {theme}.scss")
             )
             def render_markdown_document():
                 pass

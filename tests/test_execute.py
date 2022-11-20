@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 from conftest import needs_marp
+from conftest import needs_quarto
 from conftest import TEST_RESOURCES
 from pytask import cli
 from pytask import ExitCode
@@ -17,12 +18,11 @@ from pytask_markdown.execute import pytask_execute_task_setup
 @pytest.mark.unit
 def test_pytask_execute_task_setup(monkeypatch):
     """Make sure that the task setup raises errors."""
-    # Act like marp is installed since we do not test this.
     monkeypatch.setattr(
         "pytask_markdown.execute.shutil.which", lambda x: None  # noqa: U100
     )
     task = Task(
-        base_name="example", path=Path(), function=None, markers=[Mark("marp", (), {})]
+        base_name="example", path=Path(), function=None, markers=[Mark("markdown", (), {})]
     )
     with pytest.raises(RuntimeError, match="marp is needed"):
         pytask_execute_task_setup(task)
@@ -30,12 +30,12 @@ def test_pytask_execute_task_setup(monkeypatch):
 
 @needs_marp
 @pytest.mark.end_to_end
-def test_render_marp_document_raise_error_old_api(runner, tmp_path):
+def test_render_markdown_document_raise_error(runner, tmp_path):
     """Test simple render."""
     task_source = """
     import pytask
 
-    @pytask.mark.marp
+    @pytask.mark.markdown
     @pytask.mark.depends_on("document.md")
     @pytask.mark.produces("document.html")
     def task_render_document():
@@ -54,17 +54,17 @@ def test_render_marp_document_raise_error_old_api(runner, tmp_path):
     result = runner.invoke(cli, [tmp_path.as_posix()])
 
     assert result.exit_code == ExitCode.COLLECTION_FAILED
-    assert "The standard depends_on/produces syntax is not" in result.output
+    assert "Argument script and document have to specified." in result.output
 
 
 @needs_marp
 @pytest.mark.end_to_end
-def test_render_marp_document(runner, tmp_path):
+def test_render_markdown_document(runner, tmp_path):
     """Test simple render."""
     task_source = """
     import pytask
 
-    @pytask.mark.marp(script="document.md", document="document.html")
+    @pytask.mark.markdown(script="document.md", document="document.html")
     def task_render_document():
         pass
     """
@@ -82,6 +82,34 @@ def test_render_marp_document(runner, tmp_path):
     assert result.exit_code == ExitCode.OK
 
 
+@needs_quarto
+@pytest.mark.end_to_end
+def test_render_markdown_document_with_quarto(runner, tmp_path):
+    """Test simple render."""
+    task_source = """
+    import pytask
+
+    @pytask.mark.markdown(
+        script="document.md",
+        document="document.html",
+        compilation_steps="quarto",
+    )
+    def task_render_document():
+        pass
+    """
+    tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(task_source))
+
+    markdown_source = r"""
+    ---
+    title: Test
+    ---
+    """
+    tmp_path.joinpath("document.md").write_text(textwrap.dedent(markdown_source))
+
+    result = runner.invoke(cli, [tmp_path.as_posix()])
+    assert result.exit_code == ExitCode.OK
+
+
 @pytest.mark.xfail
 @needs_marp
 @pytest.mark.end_to_end
@@ -90,7 +118,7 @@ def test_render_marp_document_w_relative(runner, tmp_path):
     task_source = f"""
     import pytask
 
-    @pytask.mark.marp(
+    @pytask.mark.markdown(
         script="document.md",
         document="{tmp_path.joinpath("bld", "document.html").as_posix()}"
     )
@@ -121,7 +149,7 @@ def test_compile_markdown_document_to_different_name(runner, tmp_path):
     task_source = """
     import pytask
 
-    @pytask.mark.marp(script="in.md", document="out.pdf")
+    @pytask.mark.markdown(script="in.md", document="out.pdf")
     def task_render_document():
         pass
 
@@ -146,7 +174,7 @@ def test_raise_error_if_marp_is_not_found(tmp_path, monkeypatch):
     task_source = """
     import pytask
 
-    @pytask.mark.marp(script="document.md", document="document.html")
+    @pytask.mark.markdown(script="document.md", document="document.html")
     def task_render_document():
         pass
     """
@@ -177,7 +205,7 @@ def test_render_marp_document_w_two_dependencies(runner, tmp_path):
     task_source = """
     import pytask
 
-    @pytask.mark.marp(script="document.md", document="document.html")
+    @pytask.mark.markdown(script="document.md", document="document.html")
     @pytask.mark.depends_on("in.txt")
     def task_render_document():
         pass
@@ -204,7 +232,7 @@ def test_fail_because_script_is_not_markdown(tmp_path):
     task_source = """
     import pytask
 
-    @pytask.mark.marp(script="document.mdt", document="document.html")
+    @pytask.mark.markdown(script="document.mdt", document="document.html")
     @pytask.mark.depends_on("in.txt")
     def task_render_document():
         pass
@@ -241,7 +269,7 @@ def test_render_document_to_out_if_document_has_relative_resources(tmp_path):
     task_source = """
     import pytask
 
-    @pytask.mark.marp(script="document.md", document="out/document.html")
+    @pytask.mark.markdown(script="document.md", document="out/document.html")
     @pytask.mark.depends_on("resources/content.md")
     def task_render_document():
         pass
@@ -278,7 +306,7 @@ def test_render_document_w_wrong_flag(tmp_path):
     import pytask
     from pytask_markdown import compilation_steps
 
-    @pytask.mark.marp(
+    @pytask.mark.markdown(
         script="document.md",
         document="out/document.html",
         compilation_steps=compilation_steps.marp_cli("--wrong-flag"),
@@ -317,7 +345,7 @@ def test_render_document_w_image(runner, tmp_path):
             "{tmp_path.joinpath("image.png").as_posix()}"
         )
 
-    @pytask.mark.marp(script="document.md", document="document.html")
+    @pytask.mark.markdown(script="document.md", document="document.html")
     def task_render_document():
         pass
     """
@@ -342,8 +370,8 @@ def test_render_marp_document_w_multiple_marks(runner, tmp_path):
     task_source = """
     import pytask
 
-    @pytask.mark.marp(script="document.mdt")
-    @pytask.mark.marp(script="document.md", document="document.html")
+    @pytask.mark.markdown(script="document.mdt")
+    @pytask.mark.markdown(script="document.md", document="document.html")
     def task_render_document():
         pass
     """
@@ -359,7 +387,7 @@ def test_render_marp_document_w_multiple_marks(runner, tmp_path):
 
     result = runner.invoke(cli, [tmp_path.as_posix()])
     assert result.exit_code == ExitCode.COLLECTION_FAILED
-    assert "has multiple @pytask.mark.marp marks" in result.output
+    assert "has multiple @pytask.mark.markdown" in result.output
 
 
 @needs_marp
@@ -369,7 +397,7 @@ def test_render_marp_document_with_wrong_extension(runner, tmp_path):
     task_source = """
     import pytask
 
-    @pytask.mark.marp(script="document.md", document="document.file")
+    @pytask.mark.markdown(script="document.md", document="document.file")
     def task_render_document():
         pass
     """
@@ -404,7 +432,7 @@ def test_render_marp_document_w_unknown_compilation_step(
     task_source = f"""
     import pytask
 
-    @pytask.mark.marp(
+    @pytask.mark.markdown(
         script="document.md",
         document="document.html",
         compilation_steps={step},
@@ -434,7 +462,7 @@ def test_render_marp_document_with_task_decorator(runner, tmp_path):
     task_source = """
     import pytask
 
-    @pytask.mark.marp(script="document.md", document="document.html")
+    @pytask.mark.markdown(script="document.md", document="document.html")
     @pytask.mark.task
     def render_document():
         pass

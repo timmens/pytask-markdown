@@ -17,3 +17,6 @@ __pycache__
 build
 dist
 src/pytask_markdown/_version.py
+
+# Deck
+deck_files
