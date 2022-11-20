@@ -18,8 +18,8 @@ from pytask import parse_nodes
 from pytask import produces
 from pytask import remove_marks
 from pytask import Task
-from pytask_marp import compilation_steps as cs
-from pytask_marp.utils import to_list
+from pytask_markdown import compilation_steps as cs
+from pytask_markdown.utils import to_list
 
 
 _ERROR_MSG = """The standard depends_on/produces syntax is not supported for \
@@ -30,7 +30,7 @@ _ERROR_MSG = """The standard depends_on/produces syntax is not supported for \
     def task_marp():
         ...
 to
-    from pytask_marp import compilation_steps as cs
+    from pytask_markdown import compilation_steps as cs
     @pytask.mark.marp(
         script="source.md",
         document="document.pdf",

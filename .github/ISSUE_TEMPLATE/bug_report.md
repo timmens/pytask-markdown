@@ -1,15 +1,15 @@
 ______________________________________________________________________
 
-name: Bug Report about: Create a bug report to help us improve pytask-marp title: "BUG:"
+name: Bug Report about: Create a bug report to help us improve pytask-markdown title: "BUG:"
 labels: "bug"
 
 ______________________________________________________________________
 
 - [ ] I have checked that this issue has not already been reported.
 
-- [ ] I have confirmed this bug exists on the latest version of pytask-marp.
+- [ ] I have confirmed this bug exists on the latest version of pytask-markdown.
 
-- [ ] (optional) I have confirmed this bug exists on the `main` branch of pytask-marp.
+- [ ] (optional) I have confirmed this bug exists on the `main` branch of pytask-markdown.
 
 ______________________________________________________________________
 

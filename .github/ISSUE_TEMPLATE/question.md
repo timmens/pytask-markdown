@@ -1,11 +1,11 @@
 ______________________________________________________________________
 
-name: Submit Question about: Ask a general question about pytask-marp title: "QST:"
+name: Submit Question about: Ask a general question about pytask-markdown title: "QST:"
 labels: "question"
 
 ______________________________________________________________________
 
-#### Question about pytask-marp
+#### Question about pytask-markdown
 
 **Note**: If you'd still like to submit a question, please read
 [this guide](https://matthewrocklin.com/blog/work/2018/02/28/minimal-bug-reports)

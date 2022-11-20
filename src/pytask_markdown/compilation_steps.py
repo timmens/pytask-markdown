@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import subprocess
 
-from pytask_marp.utils import to_list
+from pytask_markdown.utils import to_list
 
 
 def marp_cli(options=()):

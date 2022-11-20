@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 from pytask import hookimpl
-from pytask_marp import collect
-from pytask_marp import config
-from pytask_marp import execute
-from pytask_marp import parametrize
+from pytask_markdown import collect
+from pytask_markdown import config
+from pytask_markdown import execute
+from pytask_markdown import parametrize
 
 
 @hookimpl

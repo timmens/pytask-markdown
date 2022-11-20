@@ -134,7 +134,7 @@ def test_parallel_parametrization_over_source_files_w_loop(runner, tmp_path):
 def test_parallel_parametrization_over_source_file_w_parametrize(runner, tmp_path):
     source = """
     import pytask
-    from pytask_marp import compilation_steps as cs
+    from pytask_markdown import compilation_steps as cs
 
     @pytask.mark.parametrize(
         "marp",
@@ -190,7 +190,7 @@ def test_parallel_parametrization_over_source_file_w_parametrize(runner, tmp_pat
 def test_parallel_parametrization_over_source_file_w_loop(runner, tmp_path):
     source = """
     import pytask
-    from pytask_marp import compilation_steps as cs
+    from pytask_markdown import compilation_steps as cs
 
     for ending in ("pdf", "html"):
 

@@ -11,7 +11,7 @@ from pytask import ExitCode
 from pytask import main
 from pytask import Mark
 from pytask import Task
-from pytask_marp.execute import pytask_execute_task_setup
+from pytask_markdown.execute import pytask_execute_task_setup
 
 
 @pytest.mark.unit
@@ -19,7 +19,7 @@ def test_pytask_execute_task_setup(monkeypatch):
     """Make sure that the task setup raises errors."""
     # Act like marp is installed since we do not test this.
     monkeypatch.setattr(
-        "pytask_marp.execute.shutil.which", lambda x: None  # noqa: U100
+        "pytask_markdown.execute.shutil.which", lambda x: None  # noqa: U100
     )
     task = Task(
         base_name="example", path=Path(), function=None, markers=[Mark("marp", (), {})]
@@ -162,7 +162,7 @@ def test_raise_error_if_marp_is_not_found(tmp_path, monkeypatch):
 
     # Hide marp if available.
     monkeypatch.setattr(
-        "pytask_marp.execute.shutil.which", lambda x: None  # noqa: U100
+        "pytask_markdown.execute.shutil.which", lambda x: None  # noqa: U100
     )
 
     session = main({"paths": tmp_path})
@@ -276,7 +276,7 @@ def test_render_document_w_wrong_flag(tmp_path):
 
     task_source = """
     import pytask
-    from pytask_marp import compilation_steps
+    from pytask_markdown import compilation_steps
 
     @pytask.mark.marp(
         script="document.md",

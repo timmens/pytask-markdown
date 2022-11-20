@@ -10,7 +10,7 @@ ______________________________________________________________________
 Provide the location of the documentation, e.g. an URL of the documentation.
 
 **Note**: You can check the latest versions of the docs on `main`
-[here](https://pytask-marp.readthedocs.io/en/latest).
+[here](https://pytask-markdown.readthedocs.io/en/latest).
 
 #### Documentation problem
 

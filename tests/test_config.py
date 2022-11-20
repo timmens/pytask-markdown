@@ -4,7 +4,7 @@ from contextlib import ExitStack as does_not_raise  # noqa: N813
 
 import pytest
 from pytask import main
-from pytask_marp.config import _convert_truthy_or_falsy_to_bool
+from pytask_markdown.config import _convert_truthy_or_falsy_to_bool
 
 
 @pytest.mark.end_to_end

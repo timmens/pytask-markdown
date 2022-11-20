@@ -1,4 +1,4 @@
-name: pytask-marp
+name: pytask-markdown
 
 channels:
   - conda-forge

@@ -3,7 +3,7 @@ from __future__ import annotations
 from contextlib import ExitStack as does_not_raise  # noqa: N813
 
 import pytest
-from pytask_marp.collect import marp
+from pytask_markdown.collect import marp
 
 
 @pytest.mark.unit

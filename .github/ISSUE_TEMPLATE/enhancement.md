@@ -1,13 +1,13 @@
 ______________________________________________________________________
 
-name: Enhancement about: Suggest an idea for pytask-marp title: "ENH:" labels:
+name: Enhancement about: Suggest an idea for pytask-markdown title: "ENH:" labels:
 "enhancement"
 
 ______________________________________________________________________
 
 #### Is your feature request related to a problem?
 
-Provide a description of what the problem is, e.g. "I wish I could use pytask-marp to do
+Provide a description of what the problem is, e.g. "I wish I could use pytask-markdown to do
 \[...\]".
 
 #### Describe the solution you'd like

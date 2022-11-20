@@ -83,7 +83,7 @@ def test_parametrized_compilation_of_marp_documents_w_loop(tmp_path):
 def test_parametrizing_marp_options_w_parametrize(tmp_path):
     task_source = """
     import pytask
-    from pytask_marp import compilation_steps as cs
+    from pytask_markdown import compilation_steps as cs
 
     @pytask.mark.parametrize(
         "marp",
@@ -135,7 +135,7 @@ def test_parametrizing_marp_options_w_loop(tmp_path):
         tmp_path.joinpath(f"{theme}.scss").write_text(textwrap.dedent(scss_source))
     source = """
     import pytask
-    from pytask_marp import compilation_steps as cs
+    from pytask_markdown import compilation_steps as cs
 
     for theme in ("gaia", "uncover"):
 

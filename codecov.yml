@@ -21,4 +21,4 @@ coverage:
 
 ignore:
   - ".tox/**/*"
-  - "src/pytask_marp/_version.py"
+  - "src/pytask_markdown/_version.py"
