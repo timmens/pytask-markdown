@@ -1,0 +1,9 @@
+prune tests
+
+exclude *.md
+exclude *.yml
+exclude *.yaml
+exclude tox.ini
+
+include README.md
+include LICENSE

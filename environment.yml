@@ -1,0 +1,26 @@
+name: pytask-marp
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - python >= 3.7
+  - pip
+  - setuptools_scm
+  - toml
+
+  # Package dependencies
+  - pytask >= 0.2
+  - pytask-parallel >= 0.1
+  - pybaum >=0.1.1
+
+  # Misc
+  - pdbpp
+  - black
+  - jupyterlab
+  - matplotlib
+  - pre-commit
+  - pytest
+  - pytest-cov
+  - pytest-xdist
