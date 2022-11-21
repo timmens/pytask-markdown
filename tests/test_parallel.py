@@ -24,18 +24,14 @@ pytestmark = pytest.mark.xfail(
     not _IS_PYTASK_PARALLEL_INSTALLED, reason="Tests require pytask-parallel."
 )
 
-skip_on_mac = pytest.mark.skipif(
-    sys.platform == "darwin", reason="Does not succeed on Mac."
-)
-
-xfail_on_remote = pytest.mark.xfail(
-    condition=os.environ.get("CI") == "true", reason="Does not succeed on CI."
+skip_on_remote_or_mac = pytest.mark.skipif(
+    sys.platform == "darwin" & os.environ.get("CI") == "true",
+    reason="Does not succeed on Mac.",
 )
 
 
 @pytestmark
-@skip_on_mac
-@xfail_on_remote
+@skip_on_remote_or_mac
 @needs_marp
 @pytest.mark.end_to_end
 def test_parallel_parametrization_over_source_files_w_parametrize(runner, tmp_path):
@@ -43,7 +39,7 @@ def test_parallel_parametrization_over_source_files_w_parametrize(runner, tmp_pa
     import pytask
 
     @pytask.mark.parametrize(
-        "marp",
+        "markdown",
         [
             {"script": "document_1.md", "document": "document_1.html"},
             {"script": "document_2.md", "document": "document_2.html"}
@@ -82,8 +78,7 @@ def test_parallel_parametrization_over_source_files_w_parametrize(runner, tmp_pa
 
 
 @pytestmark
-@skip_on_mac
-@xfail_on_remote
+@skip_on_remote_or_mac
 @needs_marp
 @pytest.mark.end_to_end
 def test_parallel_parametrization_over_source_files_w_loop(runner, tmp_path):
@@ -93,7 +88,7 @@ def test_parallel_parametrization_over_source_files_w_loop(runner, tmp_path):
     for i in range(1, 3):
 
         @pytask.mark.task
-        @pytask.mark.marp(script=f"document_{i}.md", document=f"document_{i}.html")
+        @pytask.mark.markdown(script=f"document_{i}.md", document=f"document_{i}.html")
         def task_compile_marp_document():
             pass
     """
@@ -127,8 +122,7 @@ def test_parallel_parametrization_over_source_files_w_loop(runner, tmp_path):
 
 
 @pytestmark
-@skip_on_mac
-@xfail_on_remote
+@skip_on_remote_or_mac
 @needs_marp
 @pytest.mark.end_to_end
 def test_parallel_parametrization_over_source_file_w_parametrize(runner, tmp_path):
@@ -137,17 +131,17 @@ def test_parallel_parametrization_over_source_file_w_parametrize(runner, tmp_pat
     from pytask_markdown import compilation_steps as cs
 
     @pytask.mark.parametrize(
-        "marp",
+        "markdown",
         [
             {
                 "script": "document.md",
                 "document": "document.pdf",
-                "compilation_steps": cs.marp_cli("--html"),
+                "compilation_steps": cs.marp("--html"),
             },
             {
                 "script": "document.md",
                 "document": "document.html",
-                "compilation_steps": cs.marp_cli("--html"),
+                "compilation_steps": cs.marp("--html"),
             }
         ]
     )
@@ -183,8 +177,7 @@ def test_parallel_parametrization_over_source_file_w_parametrize(runner, tmp_pat
 
 
 @pytestmark
-@skip_on_mac
-@xfail_on_remote
+@skip_on_remote_or_mac
 @needs_marp
 @pytest.mark.end_to_end
 def test_parallel_parametrization_over_source_file_w_loop(runner, tmp_path):
@@ -195,7 +188,7 @@ def test_parallel_parametrization_over_source_file_w_loop(runner, tmp_path):
     for ending in ("pdf", "html"):
 
         @pytask.mark.task
-        @pytask.mark.marp(
+        @pytask.mark.markdown(
             script="document.md",
             document=f"document.{ending}",
         )
