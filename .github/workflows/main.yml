@@ -30,14 +30,14 @@ jobs:
         python-version: ['3.8', '3.9', '3.10', '3.11']
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: false
           python-version: ${{ matrix.python-version }}
           channels: conda-forge,nodefaults
           mamba-version: "*"
-      
+
       - uses: quarto-dev/quarto-actions/setup@v2
 
       - name: Install core dependencies.
@@ -46,22 +46,26 @@ jobs:
           mamba install -c conda-forge tox-conda coverage
           npm install -g @marp-team/marp-cli
 
+      - name: Test marp call
+        shell: bash -l {0}
+        run: marp test.md -o test.html
+
       # Unit, integration, and end-to-end tests.
 
-      - name: Run unit tests and doctests.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m "unit or (not integration and not end_to_end)" --cov=./ --cov-report=xml -n auto
+      # - name: Run unit tests and doctests.
+      #   shell: bash -l {0}
+      #   run: tox -e pytest -- -m "unit or (not integration and not end_to_end)" --cov=./ --cov-report=xml -n auto
 
-      - name: Upload coverage report for unit tests and doctests.
-        if: runner.os == 'Linux' && matrix.python-version == '3.8'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F unit -c
+      # - name: Upload coverage report for unit tests and doctests.
+      #   if: runner.os == 'Linux' && matrix.python-version == '3.8'
+      #   shell: bash -l {0}
+      #   run: bash <(curl -s https://codecov.io/bash) -F unit -c
 
-      - name: Run end-to-end tests.
-        shell: bash -l {0}
-        run: tox -e pytest -- -m end_to_end --cov=./ --cov-report=xml -n auto
+      # - name: Run end-to-end tests.
+      #   shell: bash -l {0}
+      #   run: tox -e pytest -- -m end_to_end --cov=./ --cov-report=xml -n auto
 
-      - name: Upload coverage reports of end-to-end tests.
-        if: runner.os == 'Linux' && matrix.python-version == '3.8'
-        shell: bash -l {0}
-        run: bash <(curl -s https://codecov.io/bash) -F end_to_end -c
+      # - name: Upload coverage reports of end-to-end tests.
+      #   if: runner.os == 'Linux' && matrix.python-version == '3.8'
+      #   shell: bash -l {0}
+      #   run: bash <(curl -s https://codecov.io/bash) -F end_to_end -c
