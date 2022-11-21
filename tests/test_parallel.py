@@ -20,7 +20,7 @@ else:
     _IS_PYTASK_PARALLEL_INSTALLED = True
 
 
-pytestmark = pytest.mark.xfail(
+pytestmark = pytest.mark.skipif(
     not _IS_PYTASK_PARALLEL_INSTALLED, reason="Tests require pytask-parallel."
 )
 
