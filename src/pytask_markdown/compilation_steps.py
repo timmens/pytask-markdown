@@ -13,13 +13,32 @@ A compilation step constructor must yield a function with this signature.
 from __future__ import annotations
 
 import subprocess
+import shutil
 
 from pytask_markdown.utils import to_list
 
 
-def marp_cli(options=()):
+def quarto(options=()):
+    """Compilation step that calls quarto."""
+    options = [str(i) for i in to_list(options)]
+
+    def run_quarto(path_to_md, path_to_document):
+        cmd = (
+            ["quarto", "render", path_to_md.as_posix(), *options]
+            + ["--output"]
+            + [path_to_document.name]
+        )
+        subprocess.run(cmd, check=True)
+        shutil.move(path_to_document.name, path_to_document.as_posix())
+
+    return run_quarto
+
+
+def marp(options=()):
     """Compilation step that calls marp."""
     options = [str(i) for i in to_list(options)]
+
+    _verify_options_validity(options, list_of_valid_marp_options)
 
     def run_marp(path_to_md, path_to_document):
         cmd = (
@@ -32,7 +51,22 @@ def marp_cli(options=()):
     return run_marp
 
 
-_valid_options = [
+def _verify_options_validity(options, list_of_valid_options):
+    invalid = []
+    for opt in options:
+        valid = False
+        for val_opt in list_of_valid_options:
+            if val_opt in opt:
+                valid = True
+                break
+        if not valid:
+            invalid.append(opt)
+    if invalid:
+        msg = f"Options {invalid} are invalid. Please refer to the documentation."
+        raise ValueError(msg)
+
+
+list_of_valid_marp_options = [
     # Basic options:
     "--config-file",
     # Converter Options:
