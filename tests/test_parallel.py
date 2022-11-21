@@ -25,7 +25,7 @@ pytestmark = pytest.mark.xfail(
 )
 
 skip_on_remote_or_mac = pytest.mark.skipif(
-    sys.platform == "darwin" & os.environ.get("CI") == "true",
+    sys.platform == "darwin" or os.environ.get("CI") == "true",
     reason="Does not succeed on Mac.",
 )
 
