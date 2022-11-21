@@ -20,7 +20,7 @@ from pytask import remove_marks
 from pytask import Task
 from pytask_markdown import compilation_steps as cs
 from pytask_markdown.utils import to_list
-                            
+
 
 def markdown(
     *,
@@ -76,7 +76,7 @@ def pytask_collect_task(session, path, name, obj):
             )
         markdown_mark = marks[0]
         script, document, compilation_steps = markdown(**markdown_mark.kwargs)
-        
+
         if compilation_steps is None:
             compilation_steps = [session.config["markdown_renderer"]]
 
@@ -108,7 +108,8 @@ def pytask_collect_task(session, path, name, obj):
         )
 
         if not (
-            isinstance(script_node, FilePathNode) and script_node.value.suffix in (".qmd", ".md")
+            isinstance(script_node, FilePathNode)
+            and script_node.value.suffix in (".qmd", ".md")
         ):
             raise ValueError(
                 "The 'script' keyword of the @pytask.mark.markdown decorator must "

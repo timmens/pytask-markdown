@@ -7,13 +7,11 @@
 
 ______________________________________________________________________
 
-pytask-markdown allows you to render markdown documents using
-[Marp](https://marp.app/) or [Quarto](https://quarto.org/) with pytask.
+pytask-markdown allows you to render markdown documents using [Marp](https://marp.app/)
+or [Quarto](https://quarto.org/) with pytask.
 
 > **Warning**
 >
 > Work in progress.
 
-
 This is a fork from [pytask-latex](https://github.com/pytask-dev/pytask-latex).
-

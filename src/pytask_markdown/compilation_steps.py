@@ -12,8 +12,8 @@ A compilation step constructor must yield a function with this signature.
 """
 from __future__ import annotations
 
-import subprocess
 import shutil
+import subprocess
 
 from pytask_markdown.utils import to_list
 

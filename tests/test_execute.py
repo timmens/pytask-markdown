@@ -15,6 +15,24 @@ from pytask import Task
 from pytask_markdown.execute import pytask_execute_task_setup
 
 
+@pytest.fixture()
+def default_source():
+    marp = r"""
+    ---
+    marp: true
+    ---
+    ## Test
+    Text
+    """
+    quarto = r"""
+    ---
+    title: Test
+    ---
+    Text
+    """
+    return {"marp": marp, "quarto": quarto}
+
+
 @pytest.mark.unit
 def test_pytask_execute_task_setup(monkeypatch):
     """Make sure that the task setup raises errors."""
@@ -22,16 +40,18 @@ def test_pytask_execute_task_setup(monkeypatch):
         "pytask_markdown.execute.shutil.which", lambda x: None  # noqa: U100
     )
     task = Task(
-        base_name="example", path=Path(), function=None, markers=[Mark("markdown", (), {})]
+        base_name="example",
+        path=Path(),
+        function=None,
+        markers=[Mark("markdown", (), {})],
     )
     with pytest.raises(RuntimeError, match="marp is needed"):
         pytask_execute_task_setup(task)
 
 
-@needs_marp
 @pytest.mark.end_to_end
-def test_render_markdown_document_raise_error(runner, tmp_path):
-    """Test simple render."""
+def test_render_markdown_document_raise_error(runner, tmp_path, default_source):
+    """Test that wrong syntax raises error."""
     task_source = """
     import pytask
 
@@ -40,16 +60,10 @@ def test_render_markdown_document_raise_error(runner, tmp_path):
     @pytask.mark.produces("document.html")
     def task_render_document():
         pass
+
     """
     tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(task_source))
-
-    markdown_source = r"""
-    ---
-    marp: true
-    ---
-    ## Test
-    """
-    tmp_path.joinpath("document.md").write_text(textwrap.dedent(markdown_source))
+    tmp_path.joinpath("document.md").write_text(textwrap.dedent(default_source["marp"]))
 
     result = runner.invoke(cli, [tmp_path.as_posix()])
 
@@ -59,59 +73,52 @@ def test_render_markdown_document_raise_error(runner, tmp_path):
 
 @needs_marp
 @pytest.mark.end_to_end
-def test_render_markdown_document(runner, tmp_path):
-    """Test simple render."""
+def test_render_markdown_document_default(runner, tmp_path, default_source):
+    """Test simple rendering to html document with default backend."""
     task_source = """
     import pytask
 
     @pytask.mark.markdown(script="document.md", document="document.html")
     def task_render_document():
         pass
+
     """
     tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(task_source))
-
-    markdown_source = r"""
-    ---
-    marp: true
-    ---
-    ## Test
-    """
-    tmp_path.joinpath("document.md").write_text(textwrap.dedent(markdown_source))
+    tmp_path.joinpath("document.md").write_text(textwrap.dedent(default_source["marp"]))
 
     result = runner.invoke(cli, [tmp_path.as_posix()])
     assert result.exit_code == ExitCode.OK
 
 
+@needs_marp
 @needs_quarto
 @pytest.mark.end_to_end
-def test_render_markdown_document_with_quarto(runner, tmp_path):
-    """Test simple render."""
-    task_source = """
+@pytest.mark.parametrize("backend", ["marp", "quarto"])
+def test_render_markdown_document(runner, tmp_path, default_source, backend):
+    """Test simple rendering to html document."""
+    task_source = f"""
     import pytask
 
     @pytask.mark.markdown(
         script="document.md",
         document="document.html",
-        compilation_steps="quarto",
+        compilation_steps="{backend}",
     )
     def task_render_document():
         pass
+
     """
     tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(task_source))
-
-    markdown_source = r"""
-    ---
-    title: Test
-    ---
-    """
-    tmp_path.joinpath("document.md").write_text(textwrap.dedent(markdown_source))
+    tmp_path.joinpath("document.md").write_text(
+        textwrap.dedent(default_source[backend])
+    )
 
     result = runner.invoke(cli, [tmp_path.as_posix()])
     assert result.exit_code == ExitCode.OK
 
 
-@pytest.mark.xfail
 @needs_marp
+@pytest.mark.skip
 @pytest.mark.end_to_end
 def test_render_marp_document_w_relative(runner, tmp_path):
     """Test simple compilation."""
@@ -143,26 +150,27 @@ def test_render_marp_document_w_relative(runner, tmp_path):
 
 
 @needs_marp
+@needs_quarto
 @pytest.mark.end_to_end
-def test_compile_markdown_document_to_different_name(runner, tmp_path):
+@pytest.mark.parametrize("backend", ["marp", "quarto"])
+def test_compile_markdown_document_to_different_name(
+    runner, tmp_path, default_source, backend
+):
     """Render a markdown document where source and output name differ."""
-    task_source = """
+    task_source = f"""
     import pytask
 
-    @pytask.mark.markdown(script="in.md", document="out.pdf")
+    @pytask.mark.markdown(
+        script="in.md",
+        document="out.html",
+        compilation_steps="{backend}"
+    )
     def task_render_document():
         pass
 
     """
     tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(task_source))
-
-    markdown_source = r"""
-    ---
-    marp: true
-    ---
-    ## Test
-    """
-    tmp_path.joinpath("in.md").write_text(textwrap.dedent(markdown_source))
+    tmp_path.joinpath("in.md").write_text(textwrap.dedent(default_source[backend]))
 
     result = runner.invoke(cli, [tmp_path.as_posix()])
     assert result.exit_code == ExitCode.OK
@@ -170,23 +178,17 @@ def test_compile_markdown_document_to_different_name(runner, tmp_path):
 
 @needs_marp
 @pytest.mark.end_to_end
-def test_raise_error_if_marp_is_not_found(tmp_path, monkeypatch):
+def test_raise_error_if_marp_is_not_found(tmp_path, monkeypatch, default_source):
     task_source = """
     import pytask
 
     @pytask.mark.markdown(script="document.md", document="document.html")
     def task_render_document():
         pass
+
     """
     tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(task_source))
-
-    markdown_source = r"""
-    ---
-    marp: true
-    ---
-    ## Test
-    """
-    tmp_path.joinpath("document.md").write_text(textwrap.dedent(markdown_source))
+    tmp_path.joinpath("document.md").write_text(textwrap.dedent(default_source["marp"]))
 
     # Hide marp if available.
     monkeypatch.setattr(
@@ -200,25 +202,29 @@ def test_raise_error_if_marp_is_not_found(tmp_path, monkeypatch):
 
 
 @needs_marp
+@needs_quarto
 @pytest.mark.end_to_end
-def test_render_marp_document_w_two_dependencies(runner, tmp_path):
-    task_source = """
+@pytest.mark.parametrize("backend", ["marp", "quarto"])
+def test_render_marp_document_w_two_dependencies(
+    runner, tmp_path, default_source, backend
+):
+    task_source = f"""
     import pytask
 
-    @pytask.mark.markdown(script="document.md", document="document.html")
+    @pytask.mark.markdown(
+        script="document.md",
+        document="document.html",
+        compilation_steps="{backend}"
+    )
     @pytask.mark.depends_on("in.txt")
     def task_render_document():
         pass
+
     """
     tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(task_source))
-
-    markdown_source = r"""
-    ---
-    marp: true
-    ---
-    ## Test
-    """
-    tmp_path.joinpath("document.md").write_text(textwrap.dedent(markdown_source))
+    tmp_path.joinpath("document.md").write_text(
+        textwrap.dedent(default_source[backend])
+    )
     tmp_path.joinpath("in.txt").touch()
 
     result = runner.invoke(cli, [tmp_path.as_posix()])
@@ -227,25 +233,27 @@ def test_render_marp_document_w_two_dependencies(runner, tmp_path):
 
 
 @needs_marp
+@needs_quarto
 @pytest.mark.end_to_end
-def test_fail_because_script_is_not_markdown(tmp_path):
-    task_source = """
+@pytest.mark.parametrize("backend", ["marp", "quarto"])
+def test_fail_because_script_is_not_markdown(tmp_path, default_source, backend):
+    task_source = f"""
     import pytask
 
-    @pytask.mark.markdown(script="document.mdt", document="document.html")
+    @pytask.mark.markdown(
+        script="document.md",
+        document="document.html",
+        compilation_steps="{backend}"
+    )
     @pytask.mark.depends_on("in.txt")
     def task_render_document():
         pass
+
     """
     tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(task_source))
-
-    markdown_source = r"""
-    ---
-    marp: true
-    ---
-    ## Test
-    """
-    tmp_path.joinpath("document.mdt").write_text(textwrap.dedent(markdown_source))
+    tmp_path.joinpath("document.mdt").write_text(
+        textwrap.dedent(default_source[backend])
+    )
     tmp_path.joinpath("in.txt").touch()
 
     session = main({"paths": tmp_path})
@@ -254,8 +262,12 @@ def test_fail_because_script_is_not_markdown(tmp_path):
 
 
 @needs_marp
+@needs_quarto
 @pytest.mark.end_to_end
-def test_render_document_to_out_if_document_has_relative_resources(tmp_path):
+@pytest.mark.parametrize("backend", ["marp", "quarto"])
+def test_render_document_to_out_if_document_has_relative_resources(
+    tmp_path, default_source, backend
+):
     """Test that motivates the ``"--cd"`` flag.
 
     If you have a document which includes other resources via relative paths and you
@@ -266,23 +278,23 @@ def test_render_document_to_out_if_document_has_relative_resources(tmp_path):
     """
     tmp_path.joinpath("sub", "resources").mkdir(parents=True)
 
-    task_source = """
+    task_source = f"""
     import pytask
 
-    @pytask.mark.markdown(script="document.md", document="out/document.html")
+    @pytask.mark.markdown(
+        script="document.md",
+        document="out/document.html",
+        compilation_steps="{backend}"
+    )
     @pytask.mark.depends_on("resources/content.md")
     def task_render_document():
         pass
+
     """
     tmp_path.joinpath("sub", "task_dummy.py").write_text(textwrap.dedent(task_source))
-
-    markdown_source = r"""
-    ---
-    marp: true
-    ---
-    ## Test
-    """
-    tmp_path.joinpath("sub", "document.md").write_text(textwrap.dedent(markdown_source))
+    tmp_path.joinpath("sub", "document.md").write_text(
+        textwrap.dedent(default_source[backend])
+    )
 
     resources = r"""
     In Ottakring, in Ottakring, wo das Bitter so viel suesser schmeckt als irgendwo in
@@ -295,7 +307,7 @@ def test_render_document_to_out_if_document_has_relative_resources(tmp_path):
     assert len(session.tasks) == 1
 
 
-@pytest.mark.xfail
+@pytest.mark.skip
 @needs_marp
 @pytest.mark.end_to_end
 def test_render_document_w_wrong_flag(tmp_path):
@@ -348,6 +360,7 @@ def test_render_document_w_image(runner, tmp_path):
     @pytask.mark.markdown(script="document.md", document="document.html")
     def task_render_document():
         pass
+
     """
     tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(task_source))
 
