@@ -40,15 +40,21 @@ jobs:
 
       - uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Install core dependencies.
+      - name: Install testing dependencies.
         shell: bash -l {0}
-        run: |
-          mamba install -c conda-forge tox-conda coverage
-          npm install -g @marp-team/marp-cli
+        run: mamba install -c conda-forge tox-conda coverage
 
-      - name: Test marp call
+      - name: Install marp
         shell: bash -l {0}
-        run: marp test.md -o test.html
+        run: npm install -g @marp-team/marp-cli
+
+      - name: Test marp call (v0)
+        shell: bash -l {0}
+        run: npx -y @marp-team/marp-cli@2.2.1 ./test.md -o ./test.html
+
+      - name: Test marp call (v1)
+        shell: bash -l {0}
+        run: marp ./test.md -o ./test.html
 
       # Unit, integration, and end-to-end tests.
 
