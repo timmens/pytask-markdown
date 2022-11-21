@@ -1,6 +1,7 @@
 # Files
 .coverage
 coverage.*
+*.html
 
 # Folders
 .idea

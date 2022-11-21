@@ -46,11 +46,11 @@ jobs:
 
       - name: Install marp
         shell: bash -l {0}
-        run: npm install -g @marp-team/marp-cli
+        run: npm install -g @marp-team/marp-cli@2.2.0
 
       - name: Test marp call (v0)
         shell: bash -l {0}
-        run: npx -y @marp-team/marp-cli@2.2.1 ./test.md -o ./test.html
+        run: npx -y @marp-team/marp-cli@2.2.0 ./test.md -o ./test.html
 
       - name: Test marp call (v1)
         shell: bash -l {0}
