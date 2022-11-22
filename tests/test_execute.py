@@ -241,7 +241,7 @@ def test_fail_because_script_is_not_markdown(tmp_path, default_source, backend):
     import pytask
 
     @pytask.mark.markdown(
-        script="document.md",
+        script="document.mdt",
         document="document.html",
         compilation_steps="{backend}"
     )
