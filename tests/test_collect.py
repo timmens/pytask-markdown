@@ -24,7 +24,7 @@ from pytask_markdown.collect import markdown
         (
             {"script": "script.md", "document": "document.pdf"},
             does_not_raise(),
-            ("script.md", "document.pdf", None),
+            ("script.md", "document.pdf", None, None),
         ),
         (
             {
@@ -33,7 +33,7 @@ from pytask_markdown.collect import markdown
                 "compilation_steps": "quarto",
             },
             does_not_raise(),
-            ("script.md", "document.pdf", "quarto"),
+            ("script.md", "document.pdf", "quarto", None),
         ),
         (
             {
@@ -42,7 +42,12 @@ from pytask_markdown.collect import markdown
                 "compilation_steps": "invalid_compilation_steps",
             },
             does_not_raise(),
-            ("script.md", "document.pdf", "invalid_compilation_steps"),
+            ("script.md", "document.pdf", "invalid_compilation_steps", None),
+        ),
+        (
+            {"script": "script.md", "document": "document.pdf", "css": "custom.css"},
+            does_not_raise(),
+            ("script.md", "document.pdf", None, "custom.css"),
         ),
     ],
 )

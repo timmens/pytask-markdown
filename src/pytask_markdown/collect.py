@@ -29,6 +29,7 @@ def markdown(
     compilation_steps: str
     | Callable[..., Any]
     | Sequence[str | Callable[..., Any]] = None,
+    css: str | Path = None,
 ) -> tuple[str | Path | None, list[Callable[..., Any]]]:
     """Specify command line options for markdown renderers.
 
@@ -45,14 +46,20 @@ def markdown(
     if script is None or document is None:
         msg = "Argument script and document have to specified."
         raise RuntimeError(msg)
-    return script, document, compilation_steps
+    return script, document, compilation_steps, css
 
 
-def render_markdown_document(compilation_steps, path_to_md, path_to_document):
+def render_markdown_document(
+    compilation_steps, path_to_md, path_to_document, path_to_css
+):
     """Replaces the dummy function provided by the user."""
     for step in compilation_steps:
         try:
-            step(path_to_md=path_to_md, path_to_document=path_to_document)
+            step(
+                path_to_md=path_to_md,
+                path_to_document=path_to_document,
+                path_to_css=path_to_css,
+            )
         except CalledProcessError as e:
             raise RuntimeError(f"Compilation step {step.__name__} failed.") from e
 
@@ -75,7 +82,7 @@ def pytask_collect_task(session, path, name, obj):
                 "is allowed."
             )
         markdown_mark = marks[0]
-        script, document, compilation_steps = markdown(**markdown_mark.kwargs)
+        script, document, compilation_steps, css = markdown(**markdown_mark.kwargs)
 
         if compilation_steps is None:
             compilation_steps = [session.config["markdown_renderer"]]
@@ -106,6 +113,9 @@ def pytask_collect_task(session, path, name, obj):
         document_node = session.hook.pytask_collect_node(
             session=session, path=path, node=document
         )
+        css_node = session.hook.pytask_collect_node(
+            session=session, path=path, node=css
+        )
 
         if not (
             isinstance(script_node, FilePathNode)
@@ -114,6 +124,18 @@ def pytask_collect_task(session, path, name, obj):
             raise ValueError(
                 "The 'script' keyword of the @pytask.mark.markdown decorator must "
                 "point to a markdown file with the .md or .qmd suffix."
+            )
+
+        if not (
+            (css_node is None)
+            or (
+                isinstance(css_node, FilePathNode)
+                and css_node.value.suffix in (".css", ".scss")
+            )
+        ):
+            raise ValueError(
+                "The 'css' keyword of the @pytask.mark.markdown decorator must point "
+                "to a css file with the .css or .scss suffix."
             )
 
         if not (
@@ -127,8 +149,13 @@ def pytask_collect_task(session, path, name, obj):
 
         if isinstance(task.depends_on, dict):
             task.depends_on["__script"] = script_node
+            task.depends_on["__css"] = css_node
         else:
-            task.depends_on = {0: task.depends_on, "__script": script_node}
+            task.depends_on = {
+                0: task.depends_on,
+                "__script": script_node,
+                "__css": css_node,
+            }
 
         if isinstance(task.produces, dict):
             task.produces["__document"] = document_node
@@ -140,6 +167,7 @@ def pytask_collect_task(session, path, name, obj):
             compilation_steps=parsed_compilation_steps,
             path_to_md=script_node.path,
             path_to_document=document_node.path,
+            path_to_css=None if css_node is None else css_node.path,
         )
 
         if session.config["infer_markdown_dependencies"]:

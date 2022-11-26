@@ -4,7 +4,9 @@ Each compilation step must have the following signature:
 
 .. code-block::
 
-    def compilation_step(path_to_md: Path, path_to_document: Path):
+    def compilation_step(
+        path_to_md: Path, path_to_document: Path, path_to_css: Union[Path, None]
+    ):
         ...
 
 A compilation step constructor must yield a function with this signature.
@@ -22,7 +24,7 @@ def quarto(options=()):
     """Compilation step that calls quarto."""
     options = [str(i) for i in to_list(options)]
 
-    def run_quarto(path_to_md, path_to_document):
+    def run_quarto(path_to_md, path_to_document, path_to_css):  # noqa: U100
         cmd = (
             ["quarto", "render", path_to_md.as_posix(), *options]
             + ["--output"]
@@ -40,12 +42,11 @@ def marp(options=()):
 
     _verify_options_validity(options, list_of_valid_marp_options)
 
-    def run_marp(path_to_md, path_to_document):
-        cmd = (
-            ["marp", path_to_md.as_posix(), *options]
-            + ["--output"]
-            + [path_to_document.as_posix()]
-        )
+    def run_marp(path_to_md, path_to_document, path_to_css):
+        cmd = ["marp", path_to_md.as_posix(), *options]
+        if path_to_css is not None:
+            cmd += ["--theme-set", path_to_css.as_posix()]
+        cmd += ["--output", path_to_document.as_posix()]
         subprocess.run(cmd, check=True)
 
     return run_marp
@@ -61,8 +62,14 @@ def _verify_options_validity(options, list_of_valid_options):
                 break
         if not valid:
             invalid.append(opt)
+
     if invalid:
         msg = f"Options {invalid} are invalid. Please refer to the documentation."
+        if "--theme-set" in invalid:
+            msg += (
+                "\nTo use a custom css or scss theme please provide the path to the "
+                "pytask.mark.markdown function as css=/path/to/css."
+            )
         raise ValueError(msg)
 
 
@@ -83,5 +90,4 @@ list_of_valid_marp_options = [
     # Marp / Marpit Options:
     "--html",
     "--engine",
-    "--theme-set",
 ]

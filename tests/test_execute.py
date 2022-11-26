@@ -321,7 +321,7 @@ def test_render_document_w_wrong_flag(tmp_path):
     @pytask.mark.markdown(
         script="document.md",
         document="out/document.html",
-        compilation_steps=compilation_steps.marp_cli("--wrong-flag"),
+        compilation_steps=compilation_steps.marp("--wrong-flag"),
     )
     def task_render_document():
         pass
@@ -383,8 +383,8 @@ def test_render_marp_document_w_multiple_marks(runner, tmp_path):
     task_source = """
     import pytask
 
-    @pytask.mark.markdown(script="document.mdt")
-    @pytask.mark.markdown(script="document.md", document="document.html")
+    @pytask.mark.markdown(script="document1.md")
+    @pytask.mark.markdown(script="document2.md", document="document.html")
     def task_render_document():
         pass
     """

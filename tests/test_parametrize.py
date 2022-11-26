@@ -141,7 +141,7 @@ def test_parametrizing_marp_options_w_loop(tmp_path):
             @pytask.mark.markdown(
                 script="document.md",
                 document=f"document_{theme}.{format}",
-                compilation_steps=cs.marp(f"--theme-set {theme}.scss")
+                css=f"{theme}.scss",
             )
             def render_markdown_document():
                 pass
@@ -151,6 +151,7 @@ def test_parametrizing_marp_options_w_loop(tmp_path):
     markdown_source = r"""
     ---
     marp: true
+    theme: custom
     ---
     ## Test
     """
