@@ -34,7 +34,8 @@ def default_source():
 
 
 @pytest.mark.unit
-def test_pytask_execute_task_setup(monkeypatch):
+@pytest.mark.parametrize("renderer", ["marp", "quarto"])
+def test_pytask_execute_task_setup(monkeypatch, renderer):
     """Make sure that the task setup raises errors."""
     monkeypatch.setattr(
         "pytask_markdown.execute.shutil.which", lambda x: None  # noqa: U100
@@ -44,8 +45,9 @@ def test_pytask_execute_task_setup(monkeypatch):
         path=Path(),
         function=None,
         markers=[Mark("markdown", (), {})],
+        attributes={"renderer": renderer},
     )
-    with pytest.raises(RuntimeError, match="marp is needed"):
+    with pytest.raises(RuntimeError, match=f"{renderer} is needed"):
         pytask_execute_task_setup(task)
 
 

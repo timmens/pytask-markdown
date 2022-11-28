@@ -17,9 +17,9 @@ download_link = {
 def pytask_execute_task_setup(task):
     """Check that renderer is found on the PATH if a markdown task shall be executed."""
     if has_mark(task, "markdown"):
-        for renderer in ["marp", "quarto"]:
-            if shutil.which(renderer) is None:
-                raise RuntimeError(
-                    f"{renderer} is needed to render markdown documents, but it is not "
-                    f"found on your PATH. Install from {download_link[renderer]}."
-                )
+        renderer = task.attributes["renderer"]
+        if shutil.which(renderer) is None:
+            raise RuntimeError(
+                f"{renderer} is needed to render markdown documents, but it is not "
+                f"found on your PATH. Install from {download_link[renderer]}."
+            )

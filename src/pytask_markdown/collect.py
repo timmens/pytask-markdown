@@ -87,7 +87,7 @@ def pytask_collect_task(session, path, name, obj):
         if compilation_steps is None:
             compilation_steps = [session.config["markdown_renderer"]]
 
-        parsed_compilation_steps = _parse_compilation_steps(compilation_steps)
+        parsed_compilation_steps, renderer = _parse_compilation_steps(compilation_steps)
 
         obj.pytask_meta.markers.append(markdown_mark)
 
@@ -105,6 +105,7 @@ def pytask_collect_task(session, path, name, obj):
             produces=products,
             markers=markers,
             kwargs=kwargs,
+            attributes={"renderer": renderer},
         )
 
         script_node = session.hook.pytask_collect_node(
@@ -213,6 +214,7 @@ def _parse_compilation_steps(compilation_steps):
     """Parse compilation steps."""
     __tracebackhide__ = True
 
+    renderer = set()
     parsed_compilation_steps = []
     for step in to_list(compilation_steps):
         if isinstance(step, str):
@@ -221,9 +223,17 @@ def _parse_compilation_steps(compilation_steps):
             except AttributeError:
                 raise ValueError(f"Compilation step {step!r} is unknown.")
             parsed_compilation_steps.append(parsed_step())
+            if step in ("marp", "quarto"):
+                renderer.add(step)
         elif callable(step):
             parsed_compilation_steps.append(step)
+            if step.__name__.split("run_")[1] in ("marp", "quarto"):
+                renderer.add(step.__name__.split("run_")[1])
         else:
             raise ValueError(f"Compilation step {step!r} is not a valid step.")
 
-    return parsed_compilation_steps
+    if len(renderer) > 1:
+        raise ValueError(f"Cannot combine multiple renderers, but used {renderer}.")
+    renderer = renderer.pop()
+
+    return parsed_compilation_steps, renderer
