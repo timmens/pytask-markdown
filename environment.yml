@@ -22,5 +22,4 @@ dependencies:
   - pre-commit
   - pytest
   - pytest-cov
-  - pytest-xdist
   - tox
