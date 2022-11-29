@@ -10,8 +10,11 @@ from click.testing import CliRunner
 
 TEST_RESOURCES = Path(__file__).parent / "resources"
 
-needs_marp = pytest.mark.xfailif(
+needs_marp = pytest.mark.skipif(
     shutil.which("marp") is None, reason="marp needs to be installed."
+)
+needs_quarto = pytest.mark.skipif(
+    shutil.which("quarto") is None, reason="quarto needs to be installed."
 )
 
 

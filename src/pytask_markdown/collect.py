@@ -22,34 +22,16 @@ from pytask_markdown import compilation_steps as cs
 from pytask_markdown.utils import to_list
 
 
-_ERROR_MSG = """The standard depends_on/produces syntax is not supported for \
-@pytask.mark.marp. Please change the syntax from
-    @pytask.mark.marp("--some-option")
-    @pytask.mark.depends_on({"source": "source.md")
-    @pytask.mark.produces("document.pdf")
-    def task_marp():
-        ...
-to
-    from pytask_markdown import compilation_steps as cs
-    @pytask.mark.marp(
-        script="source.md",
-        document="document.pdf",
-        compilation_steps=cs.marp_cli(options="--some-options"),
-    )
-    def task_marp():
-        ...
-"""
-
-
-def marp(
+def markdown(
     *,
     script: str | Path = None,
     document: str | Path = None,
     compilation_steps: str
     | Callable[..., Any]
     | Sequence[str | Callable[..., Any]] = None,
+    css: str | Path = None,
 ) -> tuple[str | Path | None, list[Callable[..., Any]]]:
-    """Specify command line options for marp.
+    """Specify command line options for markdown renderers.
 
     Parameters
     ----------
@@ -62,15 +44,22 @@ def marp(
 
     """
     if script is None or document is None:
-        raise RuntimeError(_ERROR_MSG)
-    return script, document, compilation_steps
+        msg = "Argument script and document have to specified."
+        raise RuntimeError(msg)
+    return script, document, compilation_steps, css
 
 
-def compile_marp_document(compilation_steps, path_to_md, path_to_document):
+def render_markdown_document(
+    compilation_steps, path_to_md, path_to_document, path_to_css
+):
     """Replaces the dummy function provided by the user."""
     for step in compilation_steps:
         try:
-            step(path_to_md=path_to_md, path_to_document=path_to_document)
+            step(
+                path_to_md=path_to_md,
+                path_to_document=path_to_document,
+                path_to_css=path_to_css,
+            )
         except CalledProcessError as e:
             raise RuntimeError(f"Compilation step {step.__name__} failed.") from e
 
@@ -83,21 +72,24 @@ def pytask_collect_task(session, path, name, obj):
     if (
         (name.startswith("task_") or has_mark(obj, "task"))
         and callable(obj)
-        and has_mark(obj, "marp")
+        and has_mark(obj, "markdown")
     ):
-        obj, marks = remove_marks(obj, "marp")
+        obj, marks = remove_marks(obj, "markdown")
 
         if len(marks) > 1:
             raise ValueError(
-                f"Task {name!r} has multiple @pytask.mark.marp marks, but only one is "
-                "allowed."
+                f"Task {name!r} has multiple @pytask.mark.markdown marks, but only one "
+                "is allowed."
             )
-        marp_mark = marks[0]
-        script, document, compilation_steps = marp(**marp_mark.kwargs)
+        markdown_mark = marks[0]
+        script, document, compilation_steps, css = markdown(**markdown_mark.kwargs)
 
-        parsed_compilation_steps = _parse_compilation_steps(compilation_steps)
+        if compilation_steps is None:
+            compilation_steps = [session.config["markdown_renderer"]]
 
-        obj.pytask_meta.markers.append(marp_mark)
+        parsed_compilation_steps, renderer = _parse_compilation_steps(compilation_steps)
+
+        obj.pytask_meta.markers.append(markdown_mark)
 
         dependencies = parse_nodes(session, path, name, obj, depends_on)
         products = parse_nodes(session, path, name, obj, produces)
@@ -108,11 +100,12 @@ def pytask_collect_task(session, path, name, obj):
         task = Task(
             base_name=name,
             path=path,
-            function=_copy_func(compile_marp_document),
+            function=_copy_func(render_markdown_document),
             depends_on=dependencies,
             produces=products,
             markers=markers,
             kwargs=kwargs,
+            attributes={"renderer": renderer},
         )
 
         script_node = session.hook.pytask_collect_node(
@@ -121,28 +114,49 @@ def pytask_collect_task(session, path, name, obj):
         document_node = session.hook.pytask_collect_node(
             session=session, path=path, node=document
         )
+        css_node = session.hook.pytask_collect_node(
+            session=session, path=path, node=css
+        )
 
         if not (
-            isinstance(script_node, FilePathNode) and script_node.value.suffix == ".md"
+            isinstance(script_node, FilePathNode)
+            and script_node.value.suffix in (".qmd", ".md")
         ):
             raise ValueError(
-                "The 'script' keyword of the @pytask.mark.marp decorator must point to "
-                "a markdown file with the .md suffix."
+                "The 'script' keyword of the @pytask.mark.markdown decorator must "
+                "point to a markdown file with the .md or .qmd suffix."
+            )
+
+        if not (
+            (css_node is None)
+            or (
+                isinstance(css_node, FilePathNode)
+                and css_node.value.suffix in (".css", ".scss")
+            )
+        ):
+            raise ValueError(
+                "The 'css' keyword of the @pytask.mark.markdown decorator must point "
+                "to a css file with the .css or .scss suffix."
             )
 
         if not (
             isinstance(document_node, FilePathNode)
-            and document_node.value.suffix in [".pdf", ".html", ".png"]
+            and document_node.value.suffix in [".pdf", ".html", ".png", ".pptx"]
         ):
             raise ValueError(
-                "The 'document' keyword of the @pytask.mark.marp decorator must point "
-                "to a .pdf, .html or .png file."
+                "The 'document' keyword of the @pytask.mark.markdown decorator must "
+                "point to a .pdf, .html, .png or .pptx file."
             )
 
         if isinstance(task.depends_on, dict):
             task.depends_on["__script"] = script_node
+            task.depends_on["__css"] = css_node
         else:
-            task.depends_on = {0: task.depends_on, "__script": script_node}
+            task.depends_on = {
+                0: task.depends_on,
+                "__script": script_node,
+                "__css": css_node,
+            }
 
         if isinstance(task.produces, dict):
             task.produces["__document"] = document_node
@@ -154,19 +168,20 @@ def pytask_collect_task(session, path, name, obj):
             compilation_steps=parsed_compilation_steps,
             path_to_md=script_node.path,
             path_to_document=document_node.path,
+            path_to_css=None if css_node is None else css_node.path,
         )
 
-        if session.config["infer_marp_dependencies"]:
+        if session.config["infer_markdown_dependencies"]:
             warnings.warn(
-                "Inferring of marp dependencies is not implemented yet. "
-                "Will be ignored."
+                "Inferring of markdown dependencies is not implemented yet and will be "
+                "ignored."
             )
-            task = _add_marp_dependencies_retroactively(task, session)
+            task = _add_markdown_dependencies_retroactively(task, session)
 
         return task
 
 
-def _add_marp_dependencies_retroactively(task, session):  # noqa: U100
+def _add_markdown_dependencies_retroactively(task, session):  # noqa: U100
     return task
 
 
@@ -199,8 +214,7 @@ def _parse_compilation_steps(compilation_steps):
     """Parse compilation steps."""
     __tracebackhide__ = True
 
-    compilation_steps = ["marp_cli"] if compilation_steps is None else compilation_steps
-
+    renderer = set()
     parsed_compilation_steps = []
     for step in to_list(compilation_steps):
         if isinstance(step, str):
@@ -209,9 +223,17 @@ def _parse_compilation_steps(compilation_steps):
             except AttributeError:
                 raise ValueError(f"Compilation step {step!r} is unknown.")
             parsed_compilation_steps.append(parsed_step())
+            if step in ("marp", "quarto"):
+                renderer.add(step)
         elif callable(step):
             parsed_compilation_steps.append(step)
+            if step.__name__.split("run_")[1] in ("marp", "quarto"):
+                renderer.add(step.__name__.split("run_")[1])
         else:
             raise ValueError(f"Compilation step {step!r} is not a valid step.")
 
-    return parsed_compilation_steps
+    if len(renderer) > 1:
+        raise ValueError(f"Cannot combine multiple renderers, but used {renderer}.")
+    renderer = renderer.pop()
+
+    return parsed_compilation_steps, renderer

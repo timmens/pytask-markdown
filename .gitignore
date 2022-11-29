@@ -1,8 +1,10 @@
 # Files
 .coverage
 coverage.*
+*.html
 
 # Folders
+Library
 .idea
 .ipynb_checkpoints
 .tox
@@ -17,3 +19,6 @@ __pycache__
 build
 dist
 src/pytask_markdown/_version.py
+
+# Deck
+deck_files

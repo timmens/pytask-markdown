@@ -5,14 +5,13 @@ channels:
   - nodefaults
 
 dependencies:
-  - python >= 3.7
+  - python == 3.10
   - pip
   - setuptools_scm
   - toml
 
   # Package dependencies
   - pytask >= 0.2
-  - pytask-parallel >= 0.1
   - pybaum >=0.1.1
 
   # Misc
@@ -23,4 +22,4 @@ dependencies:
   - pre-commit
   - pytest
   - pytest-cov
-  - pytest-xdist
+  - tox

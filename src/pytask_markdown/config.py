@@ -9,13 +9,18 @@ from pytask import hookimpl
 
 @hookimpl
 def pytask_parse_config(config, config_from_file):
-    """Register the marp marker in the configuration."""
-    config["markers"]["marp"] = "Tasks which render markdown documents using Marp."
-    config["infer_marp_dependencies"] = _get_first_non_none_value(
+    """Register the markdown marker in the configuration."""
+    config["markers"]["markdown"] = "Tasks which render markdown documents."
+    config["infer_markdown_dependencies"] = _get_first_non_none_value(
         config_from_file,
-        key="infer_marp_dependencies",
+        key="infer_markdown_dependencies",
         callback=_convert_truthy_or_falsy_to_bool,
         default=True,
+    )
+    config["markdown_renderer"] = _get_first_non_none_value(
+        config_from_file,
+        key="markdown_renderer",
+        default="marp",
     )
 
 

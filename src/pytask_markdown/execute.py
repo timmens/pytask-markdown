@@ -7,12 +7,19 @@ from pytask import has_mark
 from pytask import hookimpl
 
 
+download_link = {
+    "marp": "https://github.com/marp-team/marp-cli",
+    "quarto": "https://quarto.org/",
+}
+
+
 @hookimpl
 def pytask_execute_task_setup(task):
-    """Check that marp is found on the PATH if a marp task should be executed."""
-    if has_mark(task, "marp"):
-        if shutil.which("marp") is None:
+    """Check that renderer is found on the PATH if a markdown task shall be executed."""
+    if has_mark(task, "markdown"):
+        renderer = task.attributes["renderer"]
+        if shutil.which(renderer) is None:
             raise RuntimeError(
-                "marp is needed to render markdown documents, but it is not found on "
-                "your PATH."
+                f"{renderer} is needed to render markdown documents, but it is not "
+                f"found on your PATH. Install from {download_link[renderer]}."
             )

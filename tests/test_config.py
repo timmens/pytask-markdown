@@ -10,7 +10,7 @@ from pytask_markdown.config import _convert_truthy_or_falsy_to_bool
 @pytest.mark.end_to_end
 def test_marker_is_configured(tmp_path):
     session = main({"paths": tmp_path})
-    assert "marp" in session.config["markers"]
+    assert "markdown" in session.config["markers"]
 
 
 @pytest.mark.unit
