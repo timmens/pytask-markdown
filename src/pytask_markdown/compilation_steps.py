@@ -24,9 +24,19 @@ def quarto(options=()):
     """Compilation step that calls quarto."""
     options = [str(i) for i in to_list(options)]
 
+    _verify_options_validity(options, list_of_valid_quarto_options)
+
     def run_quarto(path_to_md, path_to_document, path_to_css):  # noqa: U100
+
+        if path_to_document.suffix == ".pdf":
+            raise NotImplementedError(
+                "pytask-markdown does not support rendering to pdf with quarto yet. "
+                "Please use the marp backend."
+            )
+
         cmd = (
             ["quarto", "render", path_to_md.as_posix(), *options]
+            + ["--no-cache"]
             + ["--output"]
             + [path_to_document.name]
         )
@@ -68,7 +78,7 @@ def _verify_options_validity(options, list_of_valid_options):
         if "--theme-set" in invalid:
             msg += (
                 "\nTo use a custom css or scss theme please provide the path to the "
-                "pytask.mark.markdown function as css=/path/to/css."
+                "pytask.mark.markdown decorator as css=/path/to/css."
             )
         raise ValueError(msg)
 
@@ -91,3 +101,5 @@ list_of_valid_marp_options = [
     "--html",
     "--engine",
 ]
+
+list_of_valid_quarto_options = []

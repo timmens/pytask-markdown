@@ -4,6 +4,7 @@ coverage.*
 *.html
 
 # Folders
+Library
 .idea
 .ipynb_checkpoints
 .tox
