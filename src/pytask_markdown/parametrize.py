@@ -9,6 +9,6 @@ from pytask import hookimpl
 
 @hookimpl
 def pytask_parametrize_kwarg_to_marker(obj: Any, kwargs: dict[str, Any]) -> None:
-    """Register kwargs as latex marker."""
-    if callable(obj) and "latex" in kwargs:  # noqa: PLR2004
-        pytask.mark.latex(**kwargs.pop("latex"))(obj)
+    """Register kwargs as markdown marker."""
+    if callable(obj) and "markdown" in kwargs:  # noqa: PLR2004
+        pytask.mark.markdown(**kwargs.pop("markdown"))(obj)

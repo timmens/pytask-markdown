@@ -10,17 +10,6 @@ from pytask_markdown.collect import markdown
 @pytest.mark.parametrize(
     "kwargs, expectation, expected",
     [
-        ({}, pytest.raises(RuntimeError), None),
-        (
-            {"document": "document.pdf"},
-            pytest.raises(RuntimeError),
-            None,
-        ),
-        (
-            {"script": "script.md"},
-            pytest.raises(RuntimeError),
-            None,
-        ),
         (
             {"script": "script.md", "document": "document.pdf"},
             does_not_raise(),

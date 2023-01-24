@@ -16,7 +16,7 @@ download_link = {
 
 @hookimpl
 def pytask_execute_task_setup(task: Task) -> None:
-    """Check that renderer is found on the PATH if a markdown task shall be executed."""
+    """Check that renderer is found in PATH if a markdown task shall be executed."""
     if has_mark(task, "markdown"):
         renderer = task.attributes["renderer"]
         if shutil.which(renderer) is None:
