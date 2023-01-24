@@ -24,4 +24,4 @@ dependencies:
   - tox
 
   - pip:
-    - e .
+    - -e .
