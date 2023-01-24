@@ -27,7 +27,6 @@ def quarto(options=()):
     _verify_options_validity(options, list_of_valid_quarto_options)
 
     def run_quarto(path_to_md, path_to_document, path_to_css):  # noqa: U100
-
         if path_to_document.suffix == ".pdf":
             raise NotImplementedError(
                 "pytask-markdown does not support rendering to pdf with quarto yet. "

@@ -65,7 +65,7 @@ def test_parallel_parametrization_over_source_files_w_parametrize(runner, tmp_pa
     assert result.exit_code == ExitCode.OK
     duration_normal = time.time() - start
 
-    for name in ["document_1.html", "document_2.html"]:
+    for name in ("document_1.html", "document_2.html"):
         tmp_path.joinpath(name).unlink()
 
     start = time.time()
@@ -109,7 +109,7 @@ def test_parallel_parametrization_over_source_files_w_loop(runner, tmp_path):
     assert result.exit_code == ExitCode.OK
     duration_normal = time.time() - start
 
-    for name in ["document_1.html", "document_2.html"]:
+    for name in ("document_1.html", "document_2.html"):
         tmp_path.joinpath(name).unlink()
 
     start = time.time()
@@ -164,7 +164,7 @@ def test_parallel_parametrization_over_source_file_w_parametrize(runner, tmp_pat
     assert result.exit_code == ExitCode.OK
     duration_normal = time.time() - start
 
-    for name in ["document.pdf", "document.html"]:
+    for name in ("document.pdf", "document.html"):
         tmp_path.joinpath(name).unlink()
 
     start = time.time()
@@ -211,7 +211,7 @@ def test_parallel_parametrization_over_source_file_w_loop(runner, tmp_path):
     assert result.exit_code == ExitCode.OK
     duration_normal = time.time() - start
 
-    for name in ["document.pdf", "document.html"]:
+    for name in ("document.pdf", "document.html"):
         tmp_path.joinpath(name).unlink()
 
     start = time.time()

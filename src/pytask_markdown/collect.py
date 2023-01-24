@@ -141,7 +141,7 @@ def pytask_collect_task(session, path, name, obj):
 
         if not (
             isinstance(document_node, FilePathNode)
-            and document_node.value.suffix in [".pdf", ".html", ".png", ".pptx"]
+            and document_node.value.suffix in (".pdf", ".html", ".png", ".pptx")
         ):
             raise ValueError(
                 "The 'document' keyword of the @pytask.mark.markdown decorator must "

@@ -26,11 +26,11 @@ def pytask_parse_config(config, config_from_file):
 
 def _convert_truthy_or_falsy_to_bool(x: bool | str | None) -> bool:
     """Convert truthy or falsy value in .ini to Python boolean."""
-    if x in [True, "True", "true", "1"]:
+    if x in (True, "True", "true", "1"):
         out = True
-    elif x in [False, "False", "false", "0"]:
+    elif x in (False, "False", "false", "0"):
         out = False
-    elif x in [None, "None", "none"]:
+    elif x in (None, "None", "none"):
         out = None
     else:
         raise ValueError(

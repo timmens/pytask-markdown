@@ -23,10 +23,10 @@ def test_parametrized_rendering_of_markdown_documents_w_parametrize(tmp_path):
     """
     tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(task_source))
 
-    for name, content in [
+    for name, content in (
         ("document_1.md", "Like a worn out recording"),
         ("document_2.md", "Of a favorite song"),
-    ]:
+    ):
         markdown_source = rf"""
         ---
         marp: true
@@ -58,10 +58,10 @@ def test_parametrized_compilation_of_markdown_documents_w_loop(tmp_path):
     """
     tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(source))
 
-    for name, content in [
+    for name, content in (
         ("document_1.md", "Like a worn out recording"),
         ("document_2.md", "Of a favorite song"),
-    ]:
+    ):
         markdown_source = rf"""
         ---
         marp: true
