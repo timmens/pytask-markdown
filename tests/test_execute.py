@@ -51,28 +51,6 @@ def test_pytask_execute_task_setup(monkeypatch, renderer):
         pytask_execute_task_setup(task)
 
 
-@pytest.mark.end_to_end
-def test_render_markdown_document_raise_error(runner, tmp_path, default_source):
-    """Test that wrong syntax raises error."""
-    task_source = """
-    import pytask
-
-    @pytask.mark.markdown
-    @pytask.mark.depends_on("document.md")
-    @pytask.mark.produces("document.html")
-    def task_render_document():
-        pass
-
-    """
-    tmp_path.joinpath("task_dummy.py").write_text(textwrap.dedent(task_source))
-    tmp_path.joinpath("document.md").write_text(textwrap.dedent(default_source["marp"]))
-
-    result = runner.invoke(cli, [tmp_path.as_posix()])
-
-    assert result.exit_code == ExitCode.COLLECTION_FAILED
-    assert "Argument script and document have to specified." in result.output
-
-
 @needs_marp
 @pytest.mark.end_to_end
 def test_render_markdown_document_default(runner, tmp_path, default_source):

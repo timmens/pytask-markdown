@@ -20,7 +20,7 @@ import subprocess
 from pytask_markdown.utils import to_list
 
 
-def quarto(options=()):
+def quarto(options: str | list[str] | tuple[str, ...] = ()):
     """Compilation step that calls quarto."""
     options = [str(i) for i in to_list(options)]
 
@@ -45,7 +45,7 @@ def quarto(options=()):
     return run_quarto
 
 
-def marp(options=()):
+def marp(options: str | list[str] | tuple[str, ...] = ()):
     """Compilation step that calls marp."""
     options = [str(i) for i in to_list(options)]
 
