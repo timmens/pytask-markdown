@@ -84,4 +84,4 @@ jobs:
         shell: bash -l {0}
         run: |
           micromamba activate pytask-markdown
-          pytest -m "not slow and not jax"
+          pytest

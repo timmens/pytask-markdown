@@ -22,3 +22,6 @@ dependencies:
   - pytest
   - pytest-cov
   - tox
+
+  - pip:
+    - e .
