@@ -17,6 +17,7 @@ from pytask import hookimpl
 from pytask import parse_nodes
 from pytask import produces
 from pytask import remove_marks
+from pytask import Session
 from pytask import Task
 from pytask_markdown import compilation_steps as cs
 from pytask_markdown.utils import to_list
@@ -24,28 +25,30 @@ from pytask_markdown.utils import to_list
 
 def markdown(
     *,
-    script: str | Path = None,
-    document: str | Path = None,
+    script: str | Path,
+    document: str | Path,
     compilation_steps: str
     | Callable[..., Any]
-    | Sequence[str | Callable[..., Any]] = None,
+    | Sequence[str | Callable[..., Any]]
+    | None = None,
     css: str | Path = None,
-) -> tuple[str | Path | None, list[Callable[..., Any]]]:
-    """Specify command line options for markdown renderers.
-
+) -> tuple[
+    str | Path,
+    str | Path,
+    str | Callable[..., Any] | Sequence[str | Callable[..., Any]] | None,
+]:
+    """Specify command line options for latexmk.
     Parameters
     ----------
-    script
-        ...
-    document
-        ...
+    script : str | Path
+        The markdown file that will be rendered.
+    document : str | Path
+        The path to the rendered document.
     compilation_steps
         Compilation steps to compile the document.
-
+    css : str | Path
+        The path to the css file.
     """
-    if script is None or document is None:
-        msg = "Argument script and document have to specified."
-        raise RuntimeError(msg)
     return script, document, compilation_steps, css
 
 
@@ -65,7 +68,9 @@ def render_markdown_document(
 
 
 @hookimpl
-def pytask_collect_task(session, path, name, obj):
+def pytask_collect_task(
+    session: Session, path: Path, name: str, obj: Any
+) -> Task | None:
     """Perform some checks."""
     __tracebackhide__ = True
 
@@ -141,7 +146,7 @@ def pytask_collect_task(session, path, name, obj):
 
         if not (
             isinstance(document_node, FilePathNode)
-            and document_node.value.suffix in [".pdf", ".html", ".png", ".pptx"]
+            and document_node.value.suffix in (".pdf", ".html", ".png", ".pptx")
         ):
             raise ValueError(
                 "The 'document' keyword of the @pytask.mark.markdown decorator must "

@@ -2,6 +2,7 @@
 .coverage
 coverage.*
 *.html
+.DS_Store
 
 # Folders
 Library
