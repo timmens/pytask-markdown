@@ -20,14 +20,13 @@ import subprocess
 from pytask_markdown.utils import to_list
 
 
-def quarto(options=()):
+def quarto(options: str | list[str] | tuple[str, ...] = ()):
     """Compilation step that calls quarto."""
     options = [str(i) for i in to_list(options)]
 
     _verify_options_validity(options, list_of_valid_quarto_options)
 
     def run_quarto(path_to_md, path_to_document, path_to_css):  # noqa: U100
-
         if path_to_document.suffix == ".pdf":
             raise NotImplementedError(
                 "pytask-markdown does not support rendering to pdf with quarto yet. "
@@ -46,7 +45,7 @@ def quarto(options=()):
     return run_quarto
 
 
-def marp(options=()):
+def marp(options: str | list[str] | tuple[str, ...] = ()):
     """Compilation step that calls marp."""
     options = [str(i) for i in to_list(options)]
 
