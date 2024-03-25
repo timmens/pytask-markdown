@@ -1,4 +1,5 @@
 """Collect tasks."""
+
 from __future__ import annotations
 
 import functools
@@ -27,10 +28,9 @@ def markdown(
     *,
     script: str | Path,
     document: str | Path,
-    compilation_steps: str
-    | Callable[..., Any]
-    | Sequence[str | Callable[..., Any]]
-    | None = None,
+    compilation_steps: (
+        str | Callable[..., Any] | Sequence[str | Callable[..., Any]] | None
+    ) = None,
     css: str | Path = None,
 ) -> tuple[
     str | Path,
@@ -38,6 +38,7 @@ def markdown(
     str | Callable[..., Any] | Sequence[str | Callable[..., Any]] | None,
 ]:
     """Specify command line options for latexmk.
+
     Parameters
     ----------
     script : str | Path
@@ -48,6 +49,7 @@ def markdown(
         Compilation steps to compile the document.
     css : str | Path
         The path to the css file.
+
     """
     return script, document, compilation_steps, css
 
