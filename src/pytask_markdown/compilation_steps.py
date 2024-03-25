@@ -12,6 +12,7 @@ Each compilation step must have the following signature:
 A compilation step constructor must yield a function with this signature.
 
 """
+
 from __future__ import annotations
 
 import shutil
